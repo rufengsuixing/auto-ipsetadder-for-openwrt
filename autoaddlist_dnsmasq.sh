@@ -1,7 +1,23 @@
 #!/bin/sh
 tail -F /tmp/dnsmasq.log | grep reply |awk  -F "[, ]" '{
 ip=$8;
+if (index(ip,"<CNAME>")!=0)
+{
+if (cname==1)
+{
+    next;
+}
+cname=1;
 domain=$6;
+next;
+}
+if (lastdomain!=$6 && cname!=1)
+{
+    domain=$6;
+}
+
+cname=0;
+lastdomain=$6
 if (index(ip,".")==0)
 {
 next;
@@ -14,10 +30,9 @@ if (index(ipset,"Warning")!=0){
 print("pass");
 next;
 }
-
 tryhttps=0;
 tryhttp=0;
-while ("grep "ip" /proc/net/nf_conntrack"|getline ret > 0)
+while ("grep "ip" /proc/net/nf_conntrack"| getline ret > 0)
 {
     split(ret, b," +");
     if (b[8]=="dst="ip)
