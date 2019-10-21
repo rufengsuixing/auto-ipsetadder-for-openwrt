@@ -31,7 +31,7 @@
   每小时删除日志
   ```
   0 * * * * rm -f /tmp/log/smartdns*.gz
-  0 * * * * rm -f /tmp/dnsmasq.log
+  0 * * * * echo "" > /tmp/dnsmasq.log
   ```
   停止指令备用：
   ```
