@@ -2,11 +2,11 @@
 echo $* | awk '{
 if ($3=="443")
 {
-cmd=("httping -c 1 -t 3 -l "$2);
+cmd=("httping -c 1 -t 3 -l "$2" --divert-connect "$1);
 }
 else if ($3=="80")
 {
-cmd=("httping -c 1 -t 3 "$2);
+cmd=("httping -c 1 -t 3 "$2" --divert-connect "$1);
 }
 addlist=0;
 slow=0;

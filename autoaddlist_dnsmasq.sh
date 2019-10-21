@@ -1,8 +1,12 @@
 #!/bin/sh
-tail -F /tmp/dnsmasq.log | awk  -F "[, ]" '{
+tail -F /tmp/dnsmasq.log | grep reply |awk  -F "[, ]" '{
 ip=$8;
 domain=$6;
-if ($5=="reply" && (!(ip in a)))
+if (index(ip,".")==0)
+{
+next;
+}
+if (!(ip in a))
 { 
 "ipset test gfwlist "ip" 2>&1"| getline ipset;
 close("ipset test gfwlist "ip" 2>&1");
@@ -15,7 +19,7 @@ tryhttps=0;
 tryhttp=0;
 while ("grep "ip" /proc/net/nf_conntrack"|getline ret > 0)
 {
-    split(ret, b);
+    split(ret, b," +");
     if (b[8]=="dst="ip)
     {
         if (b[10]=="dport=443"){
@@ -39,5 +43,4 @@ else if (tryhttp==1)
 print(ip" "domain" 80");
 a[ip]=domain;
 system("testip.sh "ip" "domain" 80 &");
-}
-}}'
+}}}'
