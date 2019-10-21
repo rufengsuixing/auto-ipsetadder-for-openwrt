@@ -2,11 +2,11 @@
 echo $* | awk '{
 if ($3=="443")
 {
-cmd=("httping -c 1 -t 3 -l "$2" --divert-connect "$1);
+cmd=("httping -c 1 -t 4 -l "$2" --divert-connect "$1);
 }
 else if ($3=="80")
 {
-cmd=("httping -c 1 -t 3 "$2" --divert-connect "$1);
+cmd=("httping -c 1 -t 4 "$2" --divert-connect "$1);
 }
 addlist=0;
 slow=0;
@@ -25,7 +25,14 @@ while ((cmd | getline ret) > 0)
         system("ipset add gfwlist "$1);
         addlist=1;
         slow=1;
-    }
+    }else if (index(ret,"SSL handshake error: (null)")!=0)
+	{
+		if(system("wget -q -t 1 -T 5 --debug --spider https://"$2" 2>/dev/null")==0)
+		{
+			close(cmd);
+			next;
+		}
+	}
     }
 }
 close(cmd);
@@ -58,7 +65,13 @@ while ((cmd | getline ret) > 0)
             print("change back to direct "$1" "$2);
         }
         fin=1;
-    }
+    }else if (index(ret,"SSL handshake error: (null)")!=0)
+	{
+		if(system("wget -q -t 1 -T 5 --debug --spider https://"$2" 2>/dev/null")==0)
+		{
+			fin=1;
+		}
+	}
     }
 }
 close(cmd);
