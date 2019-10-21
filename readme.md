@@ -1,7 +1,7 @@
 ## 原理
 通过 dns日志来获得目标，通过nf_conntrack 80/443判断是否允许httping，允许的进行httping,如果超时或者rst，将结果加入ipset，并且重试httping，如果不可用会取消加入ipset</br>
 ## 安装
-依赖：httping,awk,ipset
+依赖：httping,awk,ipset,curl,tail
 </br>
 安装httping：`opkg install httping`
 </br>
@@ -54,4 +54,4 @@
 | `change back to direct [ip] [domain]` | 尝试都失败或者都3s超时
 
 注：同ip如果httping过不会重复探测，也不会有日志。</br>
-注：dnsmasq没有测试，有bug欢迎反馈
+[ ]httping在ssl上有问题，包括超时失效卡住和cloudflare的兼容不好，考虑之后用curl全部重写

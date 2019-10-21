@@ -26,23 +26,30 @@ while ((cmd | getline ret) > 0)
         addlist=1;
         slow=1;
     }else if (index(ret,"SSL handshake error: (null)")!=0)
-	{
-		if(system("wget -q -t 1 -T 5 --debug --spider https://"$2" 2>/dev/null")==0)
-		{
-			close(cmd);
-			next;
-		}
-	}
+    {
+        if(system("curl -m 10 --resolve "$2":443:"$1" https://"$2" -o /dev/null 2>/dev/null")==0){
+            close(cmd);
+            next;
+        }
+    }
     }
 }
 close(cmd);
 split(ret, c,"[ /]+");
 print(c[6]);
-if (addlist==0 && c[6]=="failed,")
+if (addlist==0)
 {
+    if (c[6]=="failed,"){
     system("ipset add gfwlist "$1);
     print("can not connect autoaddip "$1" "$2);
     addlist=1;
+    }
+    else if (c[6]+0>10000)
+    {
+        system("ipset add gfwlist "$1);
+        print("direct ssl so slow autoaddip "$1" "$2);
+        addlist=1;
+        }
 }
 if (addlist==1){
 fin=0;
@@ -66,12 +73,12 @@ while ((cmd | getline ret) > 0)
         }
         fin=1;
     }else if (index(ret,"SSL handshake error: (null)")!=0)
-	{
-		if(system("wget -q -t 1 -T 5 --debug --spider https://"$2" 2>/dev/null")==0)
-		{
-			fin=1;
-		}
-	}
+    {
+        if(system("curl -m 10 --resolve "$2":443:"$1" https://"$2" -o /dev/null 2>/dev/null")==0)
+        {
+            fin=1;
+        }
+    }
     }
 }
 close(cmd);
