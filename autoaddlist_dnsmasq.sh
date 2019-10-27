@@ -14,48 +14,75 @@ next;
 if (lastdomain!=$6 && cname!=1)
 {
     domain=$6;
+    ipcount=0;
+    for (ipindex in ipcache)
+    {
+        delete ipcache[ipindex];
+    }
+    testall=0;
 }
-
+ipcount+=1;
 cname=0;
 lastdomain=$6
 if (index(ip,".")==0)
 {
-next;
+    next;
 }
 if (!(ip in a))
 { 
-"ipset test gfwlist "ip" 2>&1"| getline ipset;
-close("ipset test gfwlist "ip" 2>&1");
-if (index(ipset,"Warning")!=0){
-print("pass");
-next;
+    "ipset test gfwlist "ip" 2>&1"| getline ipset;
+    close("ipset test gfwlist "ip" 2>&1");
+    if (index(ipset,"Warning")!=0){
+    print("pass");
+    next;
 }
-tryhttps=0;
-tryhttp=0;
-while ("grep "ip" /proc/net/nf_conntrack"| getline ret > 0)
-{
-    split(ret, b," +");
-    if (b[8]=="dst="ip)
+
+ipcache[ipcount]=ip;
+if (testall==0){
+    tryhttps=0;
+    tryhttp=0;
+    while ("grep "ip" /proc/net/nf_conntrack"| getline ret > 0)
     {
-        if (b[10]=="dport=443"){
-            tryhttps=1;
-            break;
-        }
-        else if (b[10]=="dport=80"){
-            tryhttp=1;
+        split(ret, b," +");
+        if (b[8]=="dst="ip)
+        {
+            if (b[10]=="dport=443"){
+                tryhttps=1;
+                break;
+            }
+            else if (b[10]=="dport=80"){
+                tryhttp=1;
+            }
         }
     }
+    close("grep "ip" /proc/net/nf_conntrack");
+}else{
+    if (testall==443)
+    {
+        tryhttps=1
+    }else{
+        tryhttp=1
+    }
 }
-close("grep "ip" /proc/net/nf_conntrack");
 if (tryhttps==1)
 {
-print(ip" "domain" 443");
-a[ip]=domain;
-system("testip.sh "ip" "domain" 443 &");
+    for (ipindex in ipcache){
+        print(ipcache[ipindex]" "domain" 443");
+        a[ipcache[ipindex]]=domain;
+        system("testip.sh "ipcache[ipindex]" "domain" 443 &");
+        delete ipcache[ipindex];
+    }
+    ipcount=0;
+    testall=443;
 }
 else if (tryhttp==1)
 {
-print(ip" "domain" 80");
-a[ip]=domain;
-system("testip.sh "ip" "domain" 80 &");
+    for (ipindex in ipcache){
+        print(ipcache[ipindex]" "domain" 80");
+        a[ipcache[ipindex]]=domain;
+        system("testip.sh "ipcache[ipindex]" "domain" 80 &");
+        delete ipcache[ipindex];
+    }
+    ipcount=0;
+    testall=80;
 }}}'
