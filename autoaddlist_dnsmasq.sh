@@ -33,10 +33,21 @@ if (!(ip in a))
     "ipset test gfwlist "ip" 2>&1"| getline ipset;
     close("ipset test gfwlist "ip" 2>&1");
     if (index(ipset,"Warning")!=0){
-    print("pass");
+        "ipset test china "ip" 2>&1"| getline ipset;
+        close("ipset test china "ip" 2>&1");
+        if (index(ipset,"Warning")!=0){
+            print("warning china "ip" "domain" is in gfwlist")
+        }else{
+            print("pass");
+        }
     next;
 }
-
+if (passdomain==domain)
+{
+    print("pass by packets>10 at same domain");
+    a[ip]=domain;
+    next;
+}
 ipcache[ipcount]=ip;
 if (testall==0){
     tryhttps=0;
@@ -44,6 +55,19 @@ if (testall==0){
     while ("grep "ip" /proc/net/nf_conntrack"| getline ret > 0)
     {
         split(ret, b," +");
+        split(b[11], pagnum,"=");
+        if (pagnum[2]>10)
+        {
+            print("pass by packets="pagnum[2]" "ip" "domain);
+            for (ipindex in ipcache)
+            {
+                a[ipcache[ipindex]]=domain;
+                delete ipcache[ipindex];
+            }
+            passdomian=domain;
+            close("grep "ip" /proc/net/nf_conntrack");
+            next;
+        }
         if (b[8]=="dst="ip)
         {
             if (b[10]=="dport=443"){
