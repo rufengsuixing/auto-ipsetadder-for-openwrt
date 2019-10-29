@@ -12,13 +12,16 @@ addlist=0;
 slow=0;
 while ((cmd | getline ret) > 0)
 {
-    if (addlist==0){
-    if (index(ret,"short read")!=0)
+    if (addlist==1)
     {
-    system("ipset add gfwlist "$1);
-    print("doname rst autoaddip "$1" "$2);
-    addlist=1;
+        continue;
     }
+    else if (index(ret,"short read")!=0)
+    {
+        system("ipset add gfwlist "$1);
+        print("doname rst autoaddip "$1" "$2);
+        addlist=1;
+    } 
     else if (index(ret,"timeout")!=0)
     {
         print("direct so slow autoaddip "$1" "$2);
@@ -31,7 +34,10 @@ while ((cmd | getline ret) > 0)
             close(cmd);
             next;
         }
-    }
+    }else if (index(ret,"Connection refused")!=0){
+        print("direct Connection refused "$1" "$2);
+        close(cmd);
+        next;
     }
 }
 close(cmd);
