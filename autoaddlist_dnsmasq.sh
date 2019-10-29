@@ -1,6 +1,10 @@
 #!/bin/sh
 tail -F /tmp/dnsmasq.log | grep reply |awk  -F "[, ]" '{
 ip=$8;
+if (ip=="")
+{
+next;
+}
 if (index(ip,"<CNAME>")!=0)
 {
 if (cname==1)
