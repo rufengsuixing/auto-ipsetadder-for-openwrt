@@ -69,16 +69,7 @@ while ((cmd | getline ret) > 0)
     print("doname proxy rst autodelip "$1" "$2);
     fin=1;
     }
-    else if (index(ret,"timeout")!=0)
-    {
-        print("proxy so slow"$1" "$2);
-        if (slow==1)
-        {
-            system("ipset del gfwlist "$1);
-            print("change back to direct "$1" "$2);
-        }
-        fin=1;
-    }else if (index(ret,"SSL handshake error: (null)")!=0)
+    else if (index(ret,"SSL handshake error: (null)")!=0)
     {
         if(system("curl -m 10 --resolve "$2":443:"$1" https://"$2" -o /dev/null 2>/dev/null")==0)
         {
