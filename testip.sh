@@ -35,9 +35,9 @@ while ((cmd | getline ret) > 0)
             next;
         }
     }else if (index(ret,"Connection refused")!=0){
-        print("direct Connection refused "$1" "$2);
-        close(cmd);
-        next;
+        print("direct Connection refused autoaddip"$1" "$2);
+        system("ipset add gfwlist "$1);
+        addlist=1;
     }
 }
 close(cmd);
