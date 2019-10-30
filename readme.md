@@ -1,5 +1,5 @@
 ## 原理
-通过 dns日志来获得目标，通过nf_conntrack 80/443判断是否允许httping，允许的进行httping,如果超时或者rst，将结果加入ipset，并且重试httping，如果不可用会取消加入ipset</br>
+通过 dns日志来获得目标，通过nf_conntrack 80/443判断是否允许httping，允许的整个域名所有ip进行httping,如果超时或者rst，将结果加入ipset gfwlist，并且重试httping，如果不可用会取消加入ipset gfwlist</br>
 ## 安装
 依赖：httping,awk,ipset,curl,tail
 </br>
@@ -27,6 +27,7 @@
   chmod 755 /usr/bin/testip.sh
   ```
 - 手动运行/usr/bin/autoaddlist.sh &
+  或者记录日志nohup /usr/bin/autoaddlist.sh >>/tmp/nohup.out &
 - crontab备用指令：
   每小时删除日志
   ```
@@ -38,6 +39,8 @@
   killall tail
   killall awk
   ```
+- debug用于寻找ipset gfwlist中的符合ipset china ip在/tmp/nohup.out中的日志<br>
+  `debugip.sh`
 ### 本程序输出日志：
 
 |输出|解释
@@ -50,8 +53,8 @@
 | `proxy can not connect autodelip [ip] [domain]` | ipset后连接无回应超时
 | `doname proxy rst autodelip [ip] [domain]` | 疑似ipset后连接rst
 | `direct so slow autoaddip [ip] [domain]` | 直连有回应3s超时
-| `proxy so slow [ip] [domain]` | ipset后有回应3s超时
+| `direct Connection refused autoaddip [ip] [domain]` | 直连拒绝连接
 | `change back to direct [ip] [domain]` | 尝试都失败或者都3s超时
-
+| `direct ssl so slow autoaddip [ip] [domain]` | httping超时无效bug被触发，ssl时间很久但成功了
 注：同ip如果httping过不会重复探测，也不会有日志。</br>
 [ ]httping在ssl上有问题，包括超时失效卡住和cloudflare的兼容不好，考虑之后用curl全部重写
