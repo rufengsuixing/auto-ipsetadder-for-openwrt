@@ -1,3 +1,4 @@
+#!/bin/sh
 ipset list gfwlist | awk '{
 if (index($0,".")==0)
 {
