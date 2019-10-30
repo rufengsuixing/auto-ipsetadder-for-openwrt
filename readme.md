@@ -20,14 +20,15 @@
   echo log-queries >> /etc/dnsmasq.conf
   uci commit dhcp
   ```
-- 对应你的dns服务程序复制autoaddlist.sh和testip.sh到/usr/bin/
+- 对应你的dns服务程序复制autoaddlist.sh,testip.sh,delayretest.sh到/usr/bin/
 - 修改权限
   ```
   chmod 755 /usr/bin/autoaddlist.sh
   chmod 755 /usr/bin/testip.sh
+  chmod 755 /usr/bin/delayretest.sh
   ```
-- 手动运行/usr/bin/autoaddlist.sh &
-  或者记录日志nohup /usr/bin/autoaddlist.sh >>/tmp/nohup.out &
+- 手动运行`/usr/bin/autoaddlist.sh &`<br>
+  或者记录日志`nohup /usr/bin/autoaddlist.sh >>/tmp/nohup.out &`
 - crontab备用指令：
   每小时删除日志
   ```
@@ -45,7 +46,7 @@
 
 |输出|解释
 | -|-
-| `pass` | ip已经在ipset里
+| `[ip] [domain] is in gfwlist pass"` | ip已经在ipset里
 | `[ip] [domain] [port]` | 记录检测到的可httping
 | `[浮点数值]`/`failed,` | httping得到的延迟结果，异步结果无参考价值
 | `can not connect autoaddip [ip] [domain]` | 直连无回应超时
@@ -56,5 +57,10 @@
 | `direct Connection refused autoaddip [ip] [domain]` | 直连拒绝连接
 | `change back to direct [ip] [domain]` | 尝试都失败或者都3s超时
 | `direct ssl so slow autoaddip [ip] [domain]` | httping超时无效bug被触发，ssl时间很久但成功了
+| `pass by packets=[number] [ip] [domain]` | 实验性质，在请求前看已经发送的包的数量>10放过
+| `[ip] [domain] pass by same domain ok` | 如果有一个可连接同域名ip放过
+| `warning china [ip] [domain] is in gfwlist` | 检测到china ipset与gfwlist重合
+| `ping packet loss autoaddip [ip] [domain]` | httping成功后，ping 5个包，返回收到1-3个包触发
+
 注：同ip如果httping过不会重复探测，也不会有日志。</br>
 [ ]httping在ssl上有问题，包括超时失效卡住和cloudflare的兼容不好，考虑之后用curl全部重写
