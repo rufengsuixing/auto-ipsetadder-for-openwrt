@@ -75,7 +75,25 @@ if (addlist==0)
         print("direct ssl so slow autoaddip "$1" "$2);
         addlist=1;
     }else{
-        system("rm /tmp/run/"$2" 2>/dev/null");
+        while (("ping -c 5 -q "$1 | getline ret) > 0)
+        {
+            if (index(ret,"packet loss")!=0)
+            {
+                split(ret, p,"[ ]+");
+                if (p[4]>0 && p[4]<4)
+                {
+                    system("ipset add gfwlist "$1);
+                    print("ping packet loss autoaddip "$1" "$2);
+                    addlist=1;
+                    break;
+                }
+            } 
+        }
+        close("ping -c 5 -q "$1);
+        if (addlist==0)
+        {
+            system("rm /tmp/run/"$2" 2>/dev/null");
+        }
     }
 }
 if (addlist==1){
