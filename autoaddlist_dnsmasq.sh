@@ -15,17 +15,18 @@ cname=1;
 domain=$6;
 next;
 }
-if (lastdomain!=$6 && cname!=1)
-{
-    domain=$6;
-    ipcount=0;
+if(lastdomain!=$6){
     for (ipindex in ipcache)
     {
         delete ipcache[ipindex];
     }
+    ipcount=0;
+if (cname!=1)
+{
+    domain=$6;
     testall=0;
     createpid=1;
-}
+}}
 ipcount+=1;
 cname=0;
 lastdomain=$6
@@ -43,13 +44,13 @@ if (!(ip in a))
         if (index(ipset,"Warning")!=0){
             print("warning china "ip" "domain" is in gfwlist")
         }else{
-            print("pass");
+            print(ip" "domain" is in gfwlist pass");
         }
-    next;
-}
+        next;
+    }
 if (passdomain==domain)
 {
-    print("pass by packets>10 at same domain");
+    print(ip" "domain" pass by same domain ok");
     a[ip]=domain;
     next;
 }
@@ -69,7 +70,7 @@ if (testall==0){
                 a[ipcache[ipindex]]=domain;
                 delete ipcache[ipindex];
             }
-            passdomian=domain;
+            passdomain=domain;
             close("grep "ip" /proc/net/nf_conntrack");
             next;
         }
