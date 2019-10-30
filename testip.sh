@@ -1,5 +1,11 @@
 #!/bin/sh
 echo $* | awk '{
+if ($4!="1")
+{ 
+system("sleep 2");
+}
+getline drop< "/tmp/run/"$2;
+if (ERRNO) {next;}
 if ($3=="443")
 {
 cmd=("httping -c 1 -t 4 -l "$2" --divert-connect "$1);
@@ -24,10 +30,16 @@ while ((cmd | getline ret) > 0)
     } 
     else if (index(ret,"timeout")!=0)
     {
-        print("direct so slow autoaddip "$1" "$2);
-        system("ipset add gfwlist "$1);
-        addlist=1;
-        slow=1;
+        while ((cmd | getline ret) > 0)
+        {
+            if (index(ret,"timeout")!=0)
+            {
+                print("direct so slow autoaddip "$1" "$2);
+                system("ipset add gfwlist "$1);
+                addlist=1;
+                slow=1;
+            }
+        }
     }else if (index(ret,"SSL handshake error: (null)")!=0)
     {
         if(system("curl -m 10 --resolve "$2":443:"$1" https://"$2" -o /dev/null 2>/dev/null")==0){
@@ -55,7 +67,9 @@ if (addlist==0)
         system("ipset add gfwlist "$1);
         print("direct ssl so slow autoaddip "$1" "$2);
         addlist=1;
-        }
+    }else{
+        system("rm /tmp/run/"$2" 2>/dev/null");
+    }
 }
 if (addlist==1){
 fin=0;

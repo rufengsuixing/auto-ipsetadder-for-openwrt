@@ -24,6 +24,7 @@ if (lastdomain!=$6 && cname!=1)
         delete ipcache[ipindex];
     }
     testall=0;
+    createpid=1;
 }
 ipcount+=1;
 cname=0;
@@ -93,7 +94,15 @@ if (testall==0){
     }
 }
 if (tryhttps==1)
-{
+{   if (createpid==1)
+    {
+        print "">"/tmp/run/"domain
+        print(ip" "domain" 443");
+        a[ip]=domain;
+        system("testip.sh "ip" "domain" 443 1 &");
+        delete ipcache[ipcount];
+        createpid=0;
+    }
     for (ipindex in ipcache){
         print(ipcache[ipindex]" "domain" 443");
         a[ipcache[ipindex]]=domain;
@@ -104,7 +113,16 @@ if (tryhttps==1)
     testall=443;
 }
 else if (tryhttp==1)
-{
+{   
+    if (createpid==1)
+    {
+        print "">"/tmp/run/"domain
+        print(ip" "domain" 80");
+        a[ip]=domain;
+        system("testip.sh "ip" "domain" 80 1 &");
+        delete ipcache[ipcount];
+        createpid=0;
+    }
     for (ipindex in ipcache){
         print(ipcache[ipindex]" "domain" 80");
         a[ipcache[ipindex]]=domain;
