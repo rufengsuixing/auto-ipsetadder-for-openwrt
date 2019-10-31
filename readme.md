@@ -1,9 +1,10 @@
 ## 原理
 通过 dns日志来获得目标，通过nf_conntrack 80/443判断是否允许httping，允许的整个域名所有ip进行httping,如果超时或者rst，将结果加入ipset gfwlist，并且重试httping，如果不可用会取消加入ipset gfwlist</br>
 ## 安装
-依赖：httping,awk,ipset,curl,tail
+依赖：httping,awk,ipset,curl,tail,stdbuf
 </br>
-安装httping：`opkg install httping`
+安装httping：`opkg install httping`<br>
+安装stdbuf：`opkg install coreutils-stdbuf`
 </br>
 - 二选一设置dns服务器日志记录：
   - smartdns：
@@ -57,7 +58,7 @@
 | `direct Connection refused autoaddip [ip] [domain]` | 直连拒绝连接
 | `change back to direct [ip] [domain]` | 尝试都失败或者都3s超时
 | `direct ssl so slow autoaddip [ip] [domain]` | httping超时无效bug被触发，ssl时间很久但成功了
-| `pass by packets=[number] [ip] [domain]` | 实验性质，在请求前看已经发送的包的数量>10放过
+| `pass by packets=[number] [ip] [domain]` | 实验性质，在请求前看已经发送的包的数量>12放过
 | `[ip] [domain] pass by same domain ok` | 如果有一个可连接同域名ip放过
 | `warning china [ip] [domain] is in gfwlist` | 检测到china ipset与gfwlist重合
 | `ping packet loss autoaddip [ip] [domain]` | httping成功后，ping 5个包，返回收到1-3个包触发

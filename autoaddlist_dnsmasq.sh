@@ -1,5 +1,5 @@
 #!/bin/sh
-tail -F /tmp/dnsmasq.log | grep reply |awk  -F "[, ]" '{
+stdbuf -oL tail -F /tmp/dnsmasq.log | awk  -F "[, ]" '/reply/{
 ip=$8;
 if (ip=="")
 {
@@ -62,7 +62,7 @@ if (testall==0){
     {
         split(ret, b," +");
         split(b[11], pagnum,"=");
-        if (pagnum[2]>10)
+        if (pagnum[2]>12)
         {
             print("pass by packets="pagnum[2]" "ip" "domain);
             for (ipindex in ipcache)
