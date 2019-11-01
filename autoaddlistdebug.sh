@@ -1,12 +1,15 @@
 #!/bin/sh
 stdbuf -oL tail -F /tmp/dnsmasq.log | awk  -F "[, ]+" '/reply/{
+print($0);
 ip=$8;
 if (ip=="")
 {
+print("no ip");
 next;
 }
 if (index(ip,"<CNAME>")!=0)
 {
+print("cname");
 if (cname==1)
 {
     next;
@@ -32,6 +35,8 @@ cname=0;
 lastdomain=$6
 if (index(ip,".")==0)
 {
+    print(ip);
+    print("noip");
     next;
 }
 if (!(ip in a))
@@ -132,4 +137,8 @@ else if (tryhttp==1)
     }
     ipcount=0;
     testall=80;
-}}}'
+}else
+{print("not found")
+}}
+else{print("inlist");
+}}'
