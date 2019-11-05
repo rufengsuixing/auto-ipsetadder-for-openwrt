@@ -1,5 +1,5 @@
 #!/bin/sh
-stdbuf -oL tail -F /tmp/dnsmasq.log | awk  -F "[, ]+" '/reply/{
+awk  -F "[, ]+" '/reply/{
 print($0);
 ip=$8;
 if (ip=="")
@@ -30,7 +30,7 @@ if (cname!=1)
     testall=0;
     createpid=1;
 }}
-ipcount+=1;
+
 cname=0;
 lastdomain=$6
 if (index(ip,".")==0)
@@ -39,6 +39,7 @@ if (index(ip,".")==0)
     print("noip");
     next;
 }
+ipcount+=1;
 if (!(ip in a))
 { 
     "ipset test gfwlist "ip" 2>&1"| getline ipset;
@@ -103,19 +104,21 @@ if (tryhttps==1)
 {   if (createpid==1)
     {
         print "">"/tmp/run/"domain
-        print(ip" "domain" 443");
+		close("/tmp/run/"domain);
+        print("create"domain);
+        print(ip" "domain" 443"ipcount-1);
         a[ip]=domain;
-        system("testip.sh "ip" "domain" 443 1 &");
+        system("testip.sh "ip" "domain" 443 "ipcount-1" &");
         delete ipcache[ipcount];
         createpid=0;
     }
     for (ipindex in ipcache){
-        print(ipcache[ipindex]" "domain" 443");
+        print(ipcache[ipindex]" "domain" 443 "ipindex-1);
         a[ipcache[ipindex]]=domain;
-        system("testip.sh "ipcache[ipindex]" "domain" 443 &");
+        system("testip.sh "ipcache[ipindex]" "domain" 443 "ipindex-1" &");
         delete ipcache[ipindex];
     }
-    ipcount=0;
+			  
     testall=443;
 }
 else if (tryhttp==1)
@@ -123,19 +126,20 @@ else if (tryhttp==1)
     if (createpid==1)
     {
         print "">"/tmp/run/"domain
-        print(ip" "domain" 80");
+		close("/tmp/run/"domain);
+        print("create"domain);
+        print(ip" "domain" 80 "ipcount-1);
         a[ip]=domain;
-        system("testip.sh "ip" "domain" 80 1 &");
+        system("testip.sh "ip" "domain" 80 "ipcount-1" &");
         delete ipcache[ipcount];
         createpid=0;
     }
     for (ipindex in ipcache){
-        print(ipcache[ipindex]" "domain" 80");
+        print(ipcache[ipindex]" "domain" 80 "ipindex-1);
         a[ipcache[ipindex]]=domain;
-        system("testip.sh "ipcache[ipindex]" "domain" 80 &");
+        system("testip.sh "ipcache[ipindex]" "domain" 80 "ipindex-1" &");
         delete ipcache[ipindex];
     }
-    ipcount=0;
     testall=80;
 }else
 {print("not found")
