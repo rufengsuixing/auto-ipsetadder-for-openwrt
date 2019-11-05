@@ -6,6 +6,7 @@ wait=0;
 }else
 {wait=$4;}
 system("sleep "wait);
+ERRNO="";
 getline drop< "/tmp/run/"$2;
 if (ERRNO) {
 addlist=100;
@@ -66,9 +67,10 @@ while ((cmd | getline ret) > 0)
     }
 }
 close(cmd);
+ERRNO="";
 getline drop< "/tmp/run/"$2;
-close("/tmp/run/"$2);
 if (ERRNO) {next;}
+close("/tmp/run/"$2);
 if (addlist!=1)
 {
     if (addlist==0){
@@ -145,7 +147,7 @@ if (addlist==1){
 }
 }END{
 if (addlist==2)
-{   
+{   ERRNO="";
     getline drop< "/tmp/run/"$2;
     if (ERRNO) {
         system("ipset del gfwlist "$1);
