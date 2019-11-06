@@ -9,7 +9,7 @@ system("sleep "wait);
 ERRNO="";
 getline drop< "/tmp/run/"$2;
 if (ERRNO) {
-addlist=100;
+addlist=0;
 close("/tmp/run/"$2);
 print("bypass"$1" "$2);
 next;}
@@ -26,7 +26,7 @@ addlist=0;
 slow=0;
 while ((cmd | getline ret) > 0)
 {
-    if (addlist==1)
+    if (addlist!=0)
     {
         continue;
     }
@@ -37,7 +37,6 @@ while ((cmd | getline ret) > 0)
             close(cmd);
             addlist=-1;
         }else{
-            system("ipset add gfwlist "$1);
             print("doname rst autoaddip "$1" "$2);
             addlist=1;
         }
@@ -49,7 +48,6 @@ while ((cmd | getline ret) > 0)
             if (index(ret,"timeout")!=0)
             {
                 print("direct so slow autoaddip "$1" "$2);
-                system("ipset add gfwlist "$1);
                 addlist=1;
                 slow=1;
             }
@@ -62,31 +60,26 @@ while ((cmd | getline ret) > 0)
         }
     }else if (index(ret,"Connection refused")!=0){
         print("direct Connection refused autoaddip"$1" "$2);
-        system("ipset add gfwlist "$1);
         addlist=1;
     }
 }
 close(cmd);
-ERRNO="";
-getline drop< "/tmp/run/"$2;
-if (ERRNO) {next;}
-close("/tmp/run/"$2);
+
 if (addlist!=1)
 {
     if (addlist==0){
-    split(ret, c,"[ /]+");
-    print(c[6]);
-    if (c[6]=="failed,"){
-    system("ipset add gfwlist "$1);
-    print("can not connect autoaddip "$1" "$2);
-    addlist=1;
-    }
-    else if (c[6]+0>10000)
-    {
-        system("ipset add gfwlist "$1);
-        print("direct ssl so slow autoaddip "$1" "$2);
-        addlist=1;
-    }else{addlist=-1;}
+        split(ret, c,"[ /]+");
+        print(c[6]);
+        if (c[6]=="failed,"){
+            print("can not connect autoaddip "$1" "$2);
+            addlist=1;
+        }
+        else if (c[6]+0>10000)
+        {
+            print("direct ssl so slow autoaddip "$1" "$2);
+            addlist=1;
+        }else{
+            addlist=-1;}
     }
     if (addlist==-1)
     {
@@ -100,7 +93,6 @@ if (addlist!=1)
                 split(ret, p,"[ ]+");
                 if (p[4]>0 && p[4]<4)
                 {
-                    system("ipset add gfwlist "$1);
                     print("ping packet loss autoaddip "$1" "$2);
                     addlist=1;
                     break;
@@ -108,10 +100,16 @@ if (addlist!=1)
             } 
         }
         close("ping -c 5 -q "$1);
-    }
+        }
     }
 }
+ERRNO="";
+getline drop< "/tmp/run/"$2;
+if (ERRNO) {addlist=0;next;}
+close("/tmp/run/"$2);
+
 if (addlist==1){
+system("ipset add gfwlist "$1);
 while ((cmd | getline ret) > 0)
 {
     if (addlist==1)
@@ -147,7 +145,8 @@ if (addlist==1){
 }
 }END{
 if (addlist==2)
-{   ERRNO="";
+{   
+    ERRNO="";
     getline drop< "/tmp/run/"$2;
     if (ERRNO) {
         system("ipset del gfwlist "$1);
