@@ -21,11 +21,11 @@ if(lastdomain!=$6){
         delete ipcache[ipindex];
     }
     ipcount=0;
+    createpid=1;
 if (cname!=1)
 {
     domain=$6;
     testall=0;
-    createpid=1;
 }}
 ipcount++;
 cname=0;
@@ -99,7 +99,7 @@ if (tryhttps==1)
 {   if (createpid==1)
     {
         print "">"/tmp/run/"domain
-		close("/tmp/run/"domain);
+        close("/tmp/run/"domain);
         print("create"domain);
         print(ip" "domain" 443"ipcount-1);
         a[ip]=domain;
@@ -120,7 +120,7 @@ else if (tryhttp==1)
     if (createpid==1)
     {
         print "">"/tmp/run/"domain
-		close("/tmp/run/"domain);
+        close("/tmp/run/"domain);
         print("create"domain);
         print(ip" "domain" 80 "ipcount-1);
         a[ip]=domain;
