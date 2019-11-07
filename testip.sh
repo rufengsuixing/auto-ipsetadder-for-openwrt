@@ -91,12 +91,13 @@ if (addlist!=1)
             if (index(ret,"packet loss")!=0)
             {
                 split(ret, p,"[ ]+");
-                if (p[4]>0 && p[4]<4)
+                if (p[4]>0 && p[4]<5)
                 {
                     print("ping packet loss autoaddip "$1" "$2);
+                    pingloss=1;
                     addlist=1;
-                    break;
-                }
+                }else{pingloss=0;}
+                break;
             } 
         }
         close("ping -c 5 -q "$1);
@@ -104,10 +105,11 @@ if (addlist!=1)
     }
 }
 ERRNO="";
-getline drop< "/tmp/run/"$2;
+if (pingloss!=1){
+    getline drop< "/tmp/run/"$2;
+    close("/tmp/run/"$2);
+}
 if (ERRNO) {addlist=0;next;}
-close("/tmp/run/"$2);
-
 if (addlist==1){
 system("ipset add gfwlist "$1);
 while ((cmd | getline ret) > 0)
@@ -145,7 +147,7 @@ if (addlist==1){
 }
 }END{
 if (addlist==2)
-{   
+{   if (pingloss==0){
     ERRNO="";
     getline drop< "/tmp/run/"$2;
     if (ERRNO) {
@@ -154,7 +156,7 @@ if (addlist==2)
     }else{
     print $1"\n">>"/tmp/run/"$2;
     }
-    close("/tmp/run/"$2);
+    close("/tmp/run/"$2);}
 }else if (addlist==-1)
 {
     print($1" "$2" direct success");
