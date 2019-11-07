@@ -8,12 +8,11 @@ wait=0;
 system("sleep "wait);
 ERRNO="";
 getline drop< "/tmp/run/"$2;
+close("/tmp/run/"$2);
 if (ERRNO) {
 addlist=0;
-close("/tmp/run/"$2);
 print("bypass"$1" "$2);
 next;}
-close("/tmp/run/"$2);
 if ($3=="443")
 {
 cmd=("httping -c 1 -t 4 -l "$2" --divert-connect "$1);
@@ -34,8 +33,8 @@ while ((cmd | getline ret) > 0)
     {
         if (system("httping -q -c 1 -t 4 -l "$2" --divert-connect "$1)==0)
         {
-            close(cmd);
             addlist=-1;
+            break;
         }else{
             print("doname rst autoaddip "$1" "$2);
             addlist=1;
@@ -55,8 +54,8 @@ while ((cmd | getline ret) > 0)
     }else if (index(ret,"SSL handshake error: (null)")!=0)
     {
         if(system("curl -m 10 --resolve "$2":443:"$1" https://"$2" -o /dev/null 2>/dev/null")==0){
-            close(cmd);
             addlist=-1;
+            break;
         }
     }else if (index(ret,"Connection refused")!=0){
         print("direct Connection refused autoaddip"$1" "$2);
