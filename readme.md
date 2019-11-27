@@ -1,6 +1,7 @@
 ## 原理
 通过 dns日志来获得目标，通过nf_conntrack 80/443判断是否允许httping，允许的整个域名所有ip进行httping,如果超时或者rst，将结果加入ipset gfwlist，并且重试httping，如果不可用会取消加入ipset gfwlist</br>
-## 安装
+## 安装 
+openwrt 免手动https://github.com/rufengsuixing/luci-app-autoipsetadder <br>
 依赖：httping,awk,ipset,curl,tail,stdbuf
 </br>
 安装httping：`opkg install httping`<br>
